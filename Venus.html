@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animasi Revolusi Venus dengan Persamaan Diferensial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #101010;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+
+        input[type="date"] {
+            padding: 10px;
+            font-size: 1.1em;
+            margin: 20px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            background-color: #333;
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #solarSystemContainer {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            margin: 40px auto;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.8) 100%);
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            transform-style: preserve-3d;
+            perspective: 1200px;
+        }
+
+        #sun {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 50px rgba(255, 255, 0, 0.9);
+        }
+
+        #venus {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #ff9900;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            margin-top: -20px;
+            margin-left: -20px;
+            transition: transform 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <h1>Animasi Revolusi Venus dengan Persamaan Diferensial</h1>
+
+    <!-- Input untuk memilih tanggal -->
+    <input type="date" id="dateInput" value="2024-12-07">
+
+    <!-- Tombol untuk memulai animasi -->
+    <button onclick="startAnimation()">Mulai Animasi</button>
+
+    <!-- Area animasi orbit Venus -->
+    <div id="solarSystemContainer">
+        <div id="sun"></div>
+        <div id="venus"></div>
+    </div>
+
+    <script>
+        const G = 6.67430e-11;  // Konstanta gravitasi universal (m^3 kg^-1 s^-2)
+        const M = 1.989e30;  // Massa Matahari (kg)
+        const AU = 1.496e11; // Jarak rata-rata bumi ke matahari (meter)
+        const orbitalPeriodVenus = 225 * 24 * 3600;  // Periode orbit Venus dalam detik
+        const radiusVenus = 0.72 * AU;  // Jarak Venus dari Matahari (dalam meter)
+
+        // Variabel posisi dan kecepatan
+        let position = { x: radiusVenus, y: 0 };  // Posisi awal Venus (x, y)
+        let velocity = { x: 0, y: 35.02e3 }; // Kecepatan awal Venus (m/s)
+
+        // Fungsi untuk memulai animasi
+        function startAnimation() {
+            const dateInput = document.getElementById('dateInput').value;
+            const date = new Date(dateInput); // Ambil tanggal dari input
+
+            if (isNaN(date)) {
+                alert("Tanggal tidak valid!");
+                return;
+            }
+
+            // Menghitung jumlah hari dari 1 Januari tahun tersebut
+            const startOfYear = new Date(date.getFullYear(), 0, 0);
+            const diff = date - startOfYear;
+            const daysSinceStartOfYear = diff / (1000 * 60 * 60 * 24);
+
+            // Hitung posisi Venus berdasarkan tanggal
+            updatePosition(daysSinceStartOfYear);
+        }
+
+        // Fungsi untuk memperbarui posisi Venus menggunakan metode Euler
+        function updatePosition(daysSinceStartOfYear) {
+            const timeStep = 3600 * 24;  // Langkah waktu dalam detik (1 hari)
+            let t = daysSinceStartOfYear * timeStep;
+
+            // Perhitungan posisi dan kecepatan berdasarkan persamaan gravitasi dan gerak planet
+            for (let i = 0; i < t; i++) {
+                // Hitung gaya gravitasi
+                const r = Math.sqrt(position.x * position.x + position.y * position.y); // Jarak ke Matahari
+                const force = (G * M) / (r * r);  // Gaya gravitasi
+                const acceleration = force / M;  // Percepatan Venus
+
+                // Menghitung perubahan kecepatan dan posisi menggunakan metode Euler
+                velocity.x -= acceleration * (position.x / r); // Komponen x
+                velocity.y -= acceleration * (position.y / r); // Komponen y
+
+                // Mengupdate posisi berdasarkan kecepatan
+                position.x += velocity.x * timeStep;
+                position.y += velocity.y * timeStep;
+            }
+
+            // Menampilkan animasi pergerakan Venus
+            moveVenus(position.x, position.y);
+        }
+
+        // Fungsi untuk menggerakkan Venus
+        function moveVenus(x, y) {
+            const venus = document.getElementById('venus');
+            const scale = 0.0000000001;  // Skala untuk menyamakan ukuran orbit dengan layar
+            const xPosition = x * scale;
+            const yPosition = y * scale;
+
+            // Menggerakkan Venus berdasarkan perhitungan posisi
+            venus.style.transform = `translate(-50%, -50%) translate(${xPosition}px, ${yPosition}px)`;
+        }
+    </script>
+</body>
+</html>
